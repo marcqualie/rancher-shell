@@ -9,7 +9,6 @@ module Rancher
         user: nil,
         pass: nil,
         host: 'rancher.example.com',
-        project: nil,
       }
 
       def initialize options = {}
@@ -25,7 +24,7 @@ module Rancher
       end
 
       def request method_name, resource, data, headers
-        uri = URI "https://#{@options[:host]}/v1/projects/#{@options[:project]}/#{resource}"
+        uri = URI "https://#{@options[:host]}/v1/#{resource}"
         Net::HTTP.start uri.host, uri.port, use_ssl: true do |http|
           method_class_name = "Net::HTTP::#{method_name.to_s.split('_').map(&:capitalize).join}"
           method_class = Object.const_get method_class_name
@@ -35,7 +34,6 @@ module Rancher
           ApiResponse.new http.request request
         end
       end
-
     end
   end
 end

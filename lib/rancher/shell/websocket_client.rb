@@ -1,6 +1,6 @@
-require 'websocket'
 require 'event_emitter'
 require 'rancher/shell/logger_helper'
+require 'websocket'
 
 module Rancher
   module Shell

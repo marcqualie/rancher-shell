@@ -10,15 +10,9 @@ module Rancher
 
       def self.start
         instance = self.new
-        instance.setup_api
-        instance.setup_websocket
-        $stdin.each_line do |command|
-          if command.strip === 'exit'
-            puts ".. goodbye!"
-            Kernel.exit true
-          end
-          instance.websocket.send Base64.encode64 command
-        end
+        instance.setup_api!
+        instance.setup_websocket!
+        instance.listen!
       end
 
       attr_reader :api, :websocket
@@ -26,26 +20,34 @@ module Rancher
       def initialize
         @config_file_path = "#{ENV['HOME']}/.rancher-shell.yml"
         @config = YAML.load_file(@config_file_path)
-        exit_with_error "API Host Required" unless @config['api'] && @config['api']['host']
-        exit_with_error "API Key Required" unless @config['api'] && @config['api']['key']
-        exit_with_error "API Secret Required" unless @config['api'] && @config['api']['secret']
+        @projects = @config['projects']
+        @project = @config['projects'].find { |project| project['id'] === @config['project'] } || @config['projects'].first
+        logger.info "Environment = #{@project['name']}"
+        logger.debug "  #{@project}"
+        exit_with_error "API Host Required" unless @project['api'] && @project['api']['host']
+        exit_with_error "API Key Required" unless @project['api'] && @project['api']['key']
+        exit_with_error "API Secret Required" unless @project['api'] && @project['api']['secret']
       end
 
-      def exit_with_error message
-        $stderr.puts message
-        Kernel.exit false
+      def listen!
+        $stdin.each_line do |command|
+          if command.strip === 'exit'
+            logger.info "connection closed"
+            Kernel.exit true
+          end
+          @websocket.send Base64.encode64 command
+        end
       end
 
-      def setup_api
+      def setup_api!
         @api = Rancher::Shell::Api.new(
-          host: @config['api']['host'],
-          user: @config['api']['key'],
-          pass: @config['api']['secret'],
-          project: @config['project'],
+          host: @project['api']['host'],
+          user: @project['api']['key'],
+          pass: @project['api']['secret'],
         )
       end
 
-      def setup_websocket
+      def setup_websocket!
         @response = @api.post(
           "containers/#{@config['container']}?action=execute",
           "command" => [

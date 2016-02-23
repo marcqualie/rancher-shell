@@ -18,11 +18,22 @@ module Rancher
       attr_reader :api, :websocket
 
       def initialize
-        @config_file_path = "#{ENV['HOME']}/.rancher-shell.yml"
-        @config = YAML.load_file(@config_file_path)
+        @config_file_paths = [
+          "#{ENV['HOME']}/.rancher-shell.yml",
+          "#{Dir.pwd}/.rancher-shell.yml",
+        ]
+        @config = {}
+        @config_file_paths.each do |file_path|
+          if File.exists? file_path
+            logger.debug "loading config from #{file_path}"
+            config = YAML.load_file(file_path)
+            logger.debug "  #{config}"
+            @config.merge! config
+          end
+        end
         @projects = @config['projects']
         @project = @config['projects'].find { |project| project['id'] === @config['project'] } || @config['projects'].first
-        logger.info "Environment = #{@project['name']}"
+        logger.info "environment = #{@project['id']} - #{@project['name']}"
         logger.debug "  #{@project}"
         exit_with_error "API Host Required" unless @project['api'] && @project['api']['host']
         exit_with_error "API Key Required" unless @project['api'] && @project['api']['key']
@@ -48,6 +59,7 @@ module Rancher
       end
 
       def setup_websocket!
+        logger.info "container = #{@config['container']}"
         @response = @api.post(
           "containers/#{@config['container']}?action=execute",
           "command" => [

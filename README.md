@@ -1,5 +1,8 @@
 # RancherShell
 
+[![Gem Version](https://badge.fury.io/rb/rancher-shell.svg)](https://badge.fury.io/rb/rancher-shell)
+[![Build Status](https://travis-ci.org/marcqualie/rancher-shell.svg?branch=master)](https://travis-ci.org/marcqualie/rancher-shell)
+
 A console utility for shelling into [Rancher](http://rancher.com) containers
 
 

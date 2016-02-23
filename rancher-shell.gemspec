@@ -18,7 +18,6 @@ Gem::Specification.new do |spec|
   spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
-  spec.add_dependency             "eventmachine", "~> 1.0.9.1"
   spec.add_dependency             "websocket", "~> 1.2.2"
   spec.add_dependency             "event_emitter", "~> 0.2.5"
 

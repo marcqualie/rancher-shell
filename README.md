@@ -13,8 +13,36 @@ gem install rancher-shell
 ```
 
 
+## Confguration
+
+Configuration files are loaded in the following order if they exist:
+
+- ~/.rancher-shell.yml
+- ./.rancher-shell.yml
+
+Files are merged using the following schema:
+
+``` yaml
+---
+project: 1a234
+projects:
+  - id: 1a234
+    name: "Production"
+    container: rails_web_1
+    api:
+      host: rancher.yourdomain.com
+      key: XXXXX
+      secret: XXXXX
+```
+
 
 ## Usage
+
+After configuring you can shell into your container using a single command:
+
+``` shell
+rancher-shell
+```
 
 Run `rancher-shell --help` for full usage instructions
 

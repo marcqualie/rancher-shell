@@ -11,6 +11,7 @@ module Rancher
       def self.start
         instance = self.new
         instance.setup_api!
+        instance.retrieve_containers!
         instance.setup_websocket!
         instance.listen!
       end
@@ -58,10 +59,26 @@ module Rancher
         )
       end
 
+      def retrieve_containers!
+        @response = @api.get(
+          "containers",
+        )
+        @containers = @response.json['data'].map do |container|
+          {
+            'id' => container['id'],
+            'name' => container['name'],
+            'state' => container['state'],
+            'ports' => container['ports'],
+          }
+        end
+        @container = @containers.find { |container| container['name'] === @project['container'] }
+        exit_with_error "could not find container: #{@project['container']}" unless @container
+      end
+
       def setup_websocket!
-        logger.info "container = #{@config['container']}"
+        logger.info "container = #{@container['id']}"
         @response = @api.post(
-          "containers/#{@config['container']}?action=execute",
+          "containers/#{@container['id']}?action=execute",
           "command" => [
             "/bin/sh",
             "-c",

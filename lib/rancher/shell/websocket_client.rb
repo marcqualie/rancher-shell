@@ -1,10 +1,12 @@
 require 'websocket'
 require 'event_emitter'
+require 'rancher/shell/logger_helper'
 
 module Rancher
   module Shell
     class WebsocketClient
       include EventEmitter
+      include LoggerHelper
       attr_reader :url, :handshake, :handshaked, :thread, :socket
 
       def initialize url, options = {}

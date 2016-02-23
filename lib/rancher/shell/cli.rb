@@ -1,10 +1,13 @@
 require 'rancher/shell/api'
+require 'rancher/shell/logger_helper'
 require 'rancher/shell/websocket_client'
 require 'yaml'
 
 module Rancher
   module Shell
     class CLI
+      include LoggerHelper
+
       def self.start
         instance = self.new
         instance.setup_api
@@ -55,10 +58,10 @@ module Rancher
           "tty" => false,
         )
         websocket_url = "#{@response.json['url']}?token=#{@response.json['token']}"
-        $stdout.puts "connecting to #{@response.json['url']} ..."
+        logger.info "connecting to #{@response.json['url']} ..."
         @websocket = Rancher::Shell::WebsocketClient.new websocket_url, headers: { 'Authorization' => "Bearer #{@response.json['token']}"}
         @websocket.on :open do |event|
-          $stdout.puts ".. connected!"
+          logger.info "  connected!"
         end
         @websocket.on :chunk do |encoded_chunk|
           chunk = Base64.decode64 encoded_chunk
@@ -73,12 +76,12 @@ module Rancher
           $stdout.print data
         end
         @websocket.on :error do |event|
-          puts "SOCKET ERROR: #{event.data}"
+          logger.error "socket error: #{event}"
+          Kernel.exit true
         end
-        @websocket.on :close do |event|
-          puts "CLOSED SOCKET"
-          puts event
-          @websocket = nil
+        @websocket.on :close do
+          logger.error "closed connection"
+          Kernel.exit true
         end
       end
     end

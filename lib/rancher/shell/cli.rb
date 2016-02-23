@@ -1,5 +1,6 @@
 require 'rancher/shell/api'
 require 'rancher/shell/websocket_client'
+require 'yaml'
 
 module Rancher
   module Shell
@@ -19,19 +20,31 @@ module Rancher
 
       attr_reader :api, :websocket
 
+      def initialize
+        @config_file_path = "#{ENV['HOME']}/.rancher-shell.yml"
+        @config = YAML.load_file(@config_file_path)
+        exit_with_error "API Host Required" unless @config['api'] && @config['api']['host']
+        exit_with_error "API Key Required" unless @config['api'] && @config['api']['key']
+        exit_with_error "API Secret Required" unless @config['api'] && @config['api']['secret']
+      end
+
+      def exit_with_error message
+        $stderr.puts message
+        Kernel.exit false
+      end
+
       def setup_api
         @api = Rancher::Shell::Api.new(
-          user: ENV['RANCHER_API_KEY'],
-          pass: ENV['RANCHER_API_SECRET'],
-          host: ENV['RANCHER_API_HOST'],
-          project: ENV['RANCHER_API_PROJECT'],
-          container: ENV['RANCHER_API_CONTAINER'],
+          host: @config['api']['host'],
+          user: @config['api']['key'],
+          pass: @config['api']['secret'],
+          project: @config['project'],
         )
       end
 
       def setup_websocket
         @response = @api.post(
-          "containers/#{ENV['RANCHER_API_CONTAINER']}?action=execute",
+          "containers/#{@config['container']}?action=execute",
           "command" => [
             "/bin/sh",
             "-c",

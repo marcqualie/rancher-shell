@@ -42,18 +42,13 @@ module Rancher
       end
 
       def listen!
-        input_thread = Thread.new do
-          begin
-            system("stty raw")
-            while input = STDIN.getc
-              @websocket.send Base64.encode64 input
-            end
-          ensure
-            system("stty -raw echo")
+        begin
+          system("stty raw")
+          while input = STDIN.getc
+            @websocket.send Base64.encode64 input
           end
-        end
-        while input_thread.alive?
-          sleep 1
+        ensure
+          system("stty -raw echo")
         end
       end
 

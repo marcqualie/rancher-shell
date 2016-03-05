@@ -42,12 +42,18 @@ module Rancher
       end
 
       def listen!
-        $stdin.each_line do |command|
-          if command.strip === 'exit'
-            logger.info "connection closed"
-            Kernel.exit true
+        input_thread = Thread.new do
+          begin
+            system("stty raw")
+            while input = STDIN.getc
+              @websocket.send Base64.encode64 input
+            end
+          ensure
+            system("stty -raw echo")
           end
-          @websocket.send Base64.encode64 command
+        end
+        while input_thread.alive?
+          sleep 1
         end
       end
 
@@ -96,12 +102,7 @@ module Rancher
         end
         @websocket.on :chunk do |encoded_chunk|
           chunk = Base64.decode64 encoded_chunk
-          @buffer ||= ''
-          @buffer << chunk if chunk
-          if chunk.ord === 32
-            emit :message, @buffer
-            @buffer = ''
-          end
+          emit :message, chunk
         end
         @websocket.on :message do |data|
           $stdout.print data

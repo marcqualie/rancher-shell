@@ -7,8 +7,8 @@ module Rancher
     class CLI < Thor
 
       desc "exec [COMMAND]", "Execute a command within a docker container"
-      option :project
-      option :container
+      option :project, required: true
+      option :container, required: true
       def exec command
         Config.load(
           'project' => options[:project],
@@ -30,6 +30,27 @@ module Rancher
           print project['id'].ljust 24
           print project['name'].ljust 32
           print project['api']['host']
+          print "\n"
+        end
+      end
+
+      desc "list-containers", "List all containers available within a project"
+      option :project, required: true
+      def list_containers
+        Config.load
+        projects = Config.get('projects')
+        project = projects.find { |_| _['id'] == options[:project] }
+        api = Rancher::Shell::Api.new(
+          host: project['api']['host'],
+          user: project['api']['key'],
+          pass: project['api']['secret'],
+        )
+        containers = api.get('containers?state=running').json['data']
+        containers.each do |container|
+          print container['id'].ljust 12
+          print container['state'].ljust 12
+          print container['name'].ljust 40
+          print container['ports'] if container['ports'] && container['ports'] != ''
           print "\n"
         end
       end

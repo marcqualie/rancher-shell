@@ -1,7 +1,6 @@
 require 'rancher/shell/api'
 require 'rancher/shell/logger_helper'
 require 'rancher/shell/websocket_client'
-require 'yaml'
 
 module Rancher
   module Shell
@@ -11,27 +10,10 @@ module Rancher
 
         attr_reader :api, :websocket
 
-        def initialize options
-          @config_file_paths = [
-            "#{ENV['HOME']}/.rancher-shell.yml",
-            "#{Dir.pwd}/.rancher-shell.yml",
-          ]
-          @config = {}
-          @config_file_paths.each do |file_path|
-            if File.exists? file_path
-              logger.debug "loading config from #{file_path}"
-              config = YAML.load_file(file_path)
-              logger.debug "  #{config}"
-              @config.merge! config
-            end
-          end
-          options.each do |key, value|
-            @config[key] = value unless value.nil? || value === ''
-          end
+        def initialize
+          @config = Config.get_all
           logger.debug "config = #{@config}"
           @command = @config['command']
-          @container = @config['container']
-          @projects = @config['projects']
           @project = @config['projects'].find { |project| project['id'] === @config['project'] }
           exit_with_error "Project not found: #{@config['project']}" unless @project
           logger.info "environment = #{@project['id']} - #{@project['name']}"
@@ -73,7 +55,7 @@ module Rancher
               'ports' => container['ports'],
             }
           end
-          @container = @containers.find { |container| container['name'] === @container }
+          @container = @containers.find { |container| container['name'] === @config['container'] }
           exit_with_error "could not find container: #{@container}" unless @container
         end
 
@@ -81,13 +63,13 @@ module Rancher
           logger.info "container = #{@container['id']}"
           # default_bash_command = "TERM=xterm-256color; export TERM; [ -x /bin/bash ] && ([ -x /usr/bin/script ] && /usr/bin/script -q -c \"/bin/bash\" /dev/null || exec /bin/bash) || exec /bin/sh"
           # @command = default_bash_command if @command === 'bash'
-          logger.debug "running command: #{@command}"
+          logger.debug "running command: #{@config['command']}"
           @response = @api.post(
             "containers/#{@container['id']}?action=execute",
             "command" => [
               "/bin/sh",
               "-c",
-              @command,
+              @config['command'],
             ],
             "attachStdin" => true,
             "attachStdout" => true,

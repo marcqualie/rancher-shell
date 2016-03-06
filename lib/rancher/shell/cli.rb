@@ -48,7 +48,7 @@ module Rancher
       def list_containers
         Config.load
         projects = Config.get('projects')
-        project = projects.find { |_| _['id'] == options[:project] }
+        project = projects[options[:project]]
         api = Rancher::Shell::Api.new(
           host: project['api']['host'],
           user: project['api']['key'],

@@ -1,10 +1,16 @@
 require 'rancher/shell/commands/exec'
 require 'rancher/shell/config'
+require 'rancher/shell/version'
 require 'thor'
 
 module Rancher
   module Shell
     class CLI < Thor
+      map %w[-v --version] => :version
+      desc 'version', 'display gem version'
+      def version
+        puts "Rancher::Shell #{Rancher::Shell::VERSION}"
+      end
 
       desc "exec [COMMAND]", "Execute a command within a docker container"
       option :project, required: true

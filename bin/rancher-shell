@@ -2,4 +2,4 @@
 $:.unshift 'lib'
 require 'rancher/shell/cli'
 
-Rancher::Shell::CLI.start
+Rancher::Shell::CLI.start ARGV

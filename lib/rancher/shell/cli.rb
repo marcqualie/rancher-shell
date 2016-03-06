@@ -13,12 +13,14 @@ module Rancher
       end
 
       desc "exec [COMMAND]", "Execute a command within a docker container"
-      option :project, required: true
-      option :container, required: true
-      def exec command
+      option :project, aliases: '-p'
+      option :container, aliases: '-c'
+      option :stack, aliases: '-s'
+      def exec command = nil
         Config.load(
           'project' => options[:project],
           'container' => options[:container],
+          'stack' => options[:stack],
           'command' => command,
         )
         instance = Rancher::Shell::Commands::Exec.new
@@ -35,13 +37,14 @@ module Rancher
         projects.each do |project|
           print project['id'].ljust 24
           print project['name'].ljust 32
-          print project['api']['host']
+          print project['api']['host'].ljust 32
+          print project['stacks'].keys.join(', ') unless project['stacks'].nil?
           print "\n"
         end
       end
 
       desc "list-containers", "List all containers available within a project"
-      option :project, required: true
+      option :project, aliases: '-p', required: true
       def list_containers
         Config.load
         projects = Config.get('projects')
@@ -56,6 +59,7 @@ module Rancher
           print container['id'].ljust 12
           print container['state'].ljust 12
           print container['name'].ljust 40
+          print container['imageUuid'][7..-1].ljust 48
           print container['ports'] if container['ports'] && container['ports'] != ''
           print "\n"
         end

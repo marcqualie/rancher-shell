@@ -1,4 +1,5 @@
 require 'yaml'
+require 'active_support'
 
 module Rancher
   module Shell
@@ -8,14 +9,30 @@ module Rancher
           "#{ENV['HOME']}/.rancher-shell.yml",
           "#{Dir.pwd}/.rancher-shell.yml",
         ]
-        @data ||= {}
+        @data = {}
+        @data['options'] ||= options.dup
+        @data['projects'] ||= {}
         config_file_paths.each do |file_path|
           next unless File.exists? file_path
           config = YAML.load_file file_path
-          @data.merge! config if config
+          if config
+            # TODO: make sure root options doesn't override CLI
+            @data.deep_merge! config
+          end
         end
-        options.each do |key, value|
-          @data[key] = value unless value.nil? || value === ''
+        return unless @data['options']['project']
+        @data['project'] = @data['projects'][@data['options']['project']]
+        if @data['project']['options']
+          @data['project']['options'].each do |key, value|
+            @data['options'][key] = value unless options[key]
+          end
+        end
+        if @data['options']['stack'] && @data['project']['stacks'] && @data['project']['stacks'][@data['options']['stack']]
+          if @data['project']['stacks'][@data['options']['stack']]['options']
+            @data['project']['stacks'][@data['options']['stack']]['options'].each do |key, value|
+              @data['options'][key] = value unless options[key]
+            end
+          end
         end
       end
 

@@ -13,14 +13,12 @@ module Rancher
         def initialize
           @config = Config.get_all
           logger.debug "config = #{@config}"
-          @command = @config['command']
-          @project = @config['projects'].find { |project| project['id'] === @config['project'] }
-          exit_with_error "Project not found: #{@config['project']}" unless @project
-          logger.info "environment = #{@project['id']} - #{@project['name']}"
-          logger.debug "  #{@project}"
-          exit_with_error "API Host Required" unless @project['api'] && @project['api']['host']
-          exit_with_error "API Key Required" unless @project['api'] && @project['api']['key']
-          exit_with_error "API Secret Required" unless @project['api'] && @project['api']['secret']
+          exit_with_error "Project not found: #{@config['project']}" unless @config['project']
+          exit_with_error "Command not specified" unless @config['options']['command'] && @config['options']['command'] != ''
+          exit_with_error "Container not specified" unless @config['options']['container'] && @config['options']['container'] != ''
+          exit_with_error "API Host Required" unless @config['project']['api'] && @config['project']['api']['host']
+          exit_with_error "API Key Required" unless @config['project']['api'] && @config['project']['api']['key']
+          exit_with_error "API Secret Required" unless @config['project']['api'] && @config['project']['api']['secret']
         end
 
         def listen!
@@ -37,9 +35,9 @@ module Rancher
 
         def setup_api!
           @api = Rancher::Shell::Api.new(
-            host: @project['api']['host'],
-            user: @project['api']['key'],
-            pass: @project['api']['secret'],
+            host: @config['project']['api']['host'],
+            user: @config['project']['api']['key'],
+            pass: @config['project']['api']['secret'],
           )
         end
 
@@ -55,21 +53,21 @@ module Rancher
               'ports' => container['ports'],
             }
           end
-          @container = @containers.find { |container| container['name'] === @config['container'] }
-          exit_with_error "could not find container: #{@container}" unless @container
+          @container = @containers.find { |container| container['name'] === @config['options']['container'] }
+          exit_with_error "could not find container: #{@config['options']['container']}" unless @container
         end
 
         def setup_websocket!
           logger.info "container = #{@container['id']}"
           # default_bash_command = "TERM=xterm-256color; export TERM; [ -x /bin/bash ] && ([ -x /usr/bin/script ] && /usr/bin/script -q -c \"/bin/bash\" /dev/null || exec /bin/bash) || exec /bin/sh"
-          # @command = default_bash_command if @command === 'bash'
-          logger.debug "running command: #{@config['command']}"
+          # @config['options']['command'] = default_bash_command if @config['options']['command'] === 'bash'
+          logger.debug "running command: #{@config['options']['command']}"
           @response = @api.post(
             "containers/#{@container['id']}?action=execute",
             "command" => [
               "/bin/sh",
               "-c",
-              @config['command'],
+              @config['options']['command'],
             ],
             "attachStdin" => true,
             "attachStdout" => true,

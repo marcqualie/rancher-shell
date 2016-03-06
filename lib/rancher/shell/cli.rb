@@ -44,11 +44,12 @@ module Rancher
       end
 
       desc "list-containers", "List all containers available within a project"
-      option :project, aliases: '-p', required: true
+      option :project, aliases: '-p'
       def list_containers
-        Config.load
-        projects = Config.get('projects')
-        project = projects[options[:project]]
+        Config.load(
+          'project' => options[:project],
+        )
+        project = Config.get('project')
         api = Rancher::Shell::Api.new(
           host: project['api']['host'],
           user: project['api']['key'],

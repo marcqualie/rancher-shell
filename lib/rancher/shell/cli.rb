@@ -34,8 +34,8 @@ module Rancher
       def list_projects
         Config.load
         projects = Config.get('projects')
-        projects.each do |project|
-          print project['id'].ljust 24
+        projects.each do |key, project|
+          print key.ljust 24
           print project['name'].ljust 32
           print project['api']['host'].ljust 32
           print project['stacks'].keys.join(', ') unless project['stacks'].nil?

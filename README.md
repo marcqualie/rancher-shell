@@ -27,27 +27,49 @@ Files are merged using the following schema:
 
 ``` yaml
 ---
-project: 1a234
+# ~/.rancher-shell.yml
 projects:
-  - id: 1a234
-    name: "Production"
-    container: rails_web_1
+  project1:
+    name: "My First Project"
+    options:
+      container: production_web_1
+      command: bundle exec rails console
+    stacks:
+      staging:
+        options:
+          container: staging_web_1
     api:
       host: rancher.yourdomain.com
       key: XXXXX
       secret: XXXXX
 ```
 
+``` yaml
+---
+# /path/to/project1/.rancher-shell.yml
+options:
+  project: project1
+projects:
+  project1:
+    stacks:
+      qa:
+        options:
+          container: qa_web_1
+```
+
+Running `rancher-shell exec` with the above config will run command `bundle exec rails console` on `project1` within container `production_web_1`. Running `rancher-shell exec -s staging` will run the same command but within container `staging_web_1`. Full usage instructions on how to override these configs is at `rancher-shell help exec`.
+
+
 
 ## Usage
 
-After configuring you can shell into your container using a single command:
+After configuring you can shell into your container using the following command:
 
 ``` shell
-rancher-shell
+rancher-shell exec [-p project] [-s stack] [-c container] [command]
 ```
 
-Run `rancher-shell --help` for full usage instructions
+Run `rancher-shell help` for full usage instructions
 
 
 

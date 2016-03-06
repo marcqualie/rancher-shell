@@ -62,15 +62,24 @@ describe Rancher::Shell::Config do
           Rancher::Shell::Config.load('project' => 'test1', 'stack' => 'qa')
           expect(Rancher::Shell::Config.get('options')['container']).to eq 'qa_web_1'
         end
-        it "cannot override a stack set via CLI" do
-          set_config_file_content config_file_path_home, { 'projects' => stack_config.deep_merge('test1' => { 'options' => { 'stack' => 'qa' } }) }
-          Rancher::Shell::Config.load('project' => 'test1', 'stack' => 'production')
-          expect(Rancher::Shell::Config.get('options')['container']).to eq 'production_web_1'
+        context "defined at root level" do
+          it "cannot override a stack set via CLI" do
+            set_config_file_content config_file_path_home, { 'options' => { 'stack' => 'qa' } }
+            Rancher::Shell::Config.load('stack' => 'production')
+            expect(Rancher::Shell::Config.get('options')['stack']).to eq 'production'
+          end
         end
-        it "cannot override a container set via CLI" do
-          set_config_file_content config_file_path_home, { 'projects' => stack_config }
-          Rancher::Shell::Config.load('project' => 'test1', 'stack' => 'qa', 'container' => 'qa_web_2')
-          expect(Rancher::Shell::Config.get('options')['container']).to eq 'qa_web_2'
+        context "defined at project level" do
+          it "cannot override a stack set via CLI" do
+            set_config_file_content config_file_path_home, { 'projects' => stack_config.deep_merge('test1' => { 'options' => { 'stack' => 'qa' } }) }
+            Rancher::Shell::Config.load('project' => 'test1', 'stack' => 'production')
+            expect(Rancher::Shell::Config.get('options')['container']).to eq 'production_web_1'
+          end
+          it "cannot override a container set via CLI" do
+            set_config_file_content config_file_path_home, { 'projects' => stack_config }
+            Rancher::Shell::Config.load('project' => 'test1', 'stack' => 'qa', 'container' => 'qa_web_2')
+            expect(Rancher::Shell::Config.get('options')['container']).to eq 'qa_web_2'
+          end
         end
       end
       context "options.container is specified" do

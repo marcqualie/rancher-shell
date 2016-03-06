@@ -16,7 +16,12 @@ module Rancher
           next unless File.exists? file_path
           config = YAML.load_file file_path
           if config
-            # TODO: make sure root options doesn't override CLI
+            if config['options']
+              config['options'].each do |key, value|
+                @data['options'][key] = value unless options[key]
+              end
+              config.delete('options')
+            end
             @data.deep_merge! config
           end
         end

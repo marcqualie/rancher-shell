@@ -1,5 +1,4 @@
 .bundle
 .env
-Gemfile.lock
 *.gem
 .rancher-shell.yml

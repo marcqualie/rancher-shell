@@ -1,0 +1,14 @@
+machine:
+  ruby:
+    version: 2.3.1
+
+dependencies:
+  cache_directories:
+    - "vendor/bundle"
+  override:
+    - gem install bundler
+    - bundle install -j4 --path vendor/bundle
+
+test:
+  override:
+    - bundle exec rspec --format documentation

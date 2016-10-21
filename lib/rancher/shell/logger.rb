@@ -1,24 +1,22 @@
+require "logger"
+
 module Rancher
   module Shell
-    class Logger
-      def debug message
-        $stdout.puts "[#{DateTime.now.strftime '%Y-%m-%d %H:%M:%S'}] DEBUG -- : #{message}"
+    class Logger < ::Logger
+      def initialize(*args)
+        super
+        @formatter = Formatter.new
+        # TODO: Use whitelist here for better security
+        @level = ::Logger.const_get(ENV['LOG_LEVEL'].upcase) rescue ::Logger::INFO
       end
 
-      def info message
-        $stdout.puts "[#{DateTime.now.strftime '%Y-%m-%d %H:%M:%S'}]  INFO -- : #{message}"
-      end
+      class Formatter < ::Logger::Formatter
+        # Default: "%s, [%s#%d] %5s -- %s: %s\n"
+        Format = "%s, [%s#%d] %5s -- %s: [RANCHER::SHELL] %s\n"
 
-      def error message
-        $stderr.puts "[#{DateTime.now.strftime '%Y-%m-%d %H:%M:%S'}] ERROR -- : #{message}"
-      end
-
-      def warn message
-        $stderr.puts "[#{DateTime.now.strftime '%Y-%m-%d %H:%M:%S'}]  WARN -- : #{message}"
-      end
-
-      def out message
-        $stdout.puts "[#{DateTime.now.strftime '%Y-%m-%d %H:%M:%S'}]       -- : #{message}"
+        def call(severity, time, progname, msg)
+          Format % [severity[0..0], format_datetime(time), $$, severity, progname, msg2str(msg)]
+        end
       end
     end
   end

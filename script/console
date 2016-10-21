@@ -1,0 +1,9 @@
+#!/usr/bin/env ruby
+require "bundler"
+Bundler.setup
+
+require "#{__dir__}/../lib/rancher/shell/all"
+
+require "irb"
+require "irb/completion"
+IRB.start

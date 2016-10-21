@@ -1,0 +1,11 @@
+require "rancher/shell"
+require "rancher/shell/api_response"
+require "rancher/shell/api"
+require "rancher/shell/cli"
+require "rancher/shell/config"
+require "rancher/shell/logger_helper"
+require "rancher/shell/logger"
+require "rancher/shell/version"
+require "rancher/shell/websocket_client"
+
+require "rancher/shell/commands/exec"

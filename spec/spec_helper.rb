@@ -1,2 +1,5 @@
 $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
-require 'rancher/shell'
+
+require "simplecov"
+
+require "rancher/shell"

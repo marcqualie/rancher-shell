@@ -1,7 +1,7 @@
 # RancherShell
 
 [![Gem Version](https://badge.fury.io/rb/rancher-shell.svg)](https://badge.fury.io/rb/rancher-shell)
-[![Build Status](https://travis-ci.org/marcqualie/rancher-shell.svg?branch=master)](https://travis-ci.org/marcqualie/rancher-shell)
+[![CircleCI](https://circleci.com/gh/marcqualie/rancher-shell.svg?style=shield)](https://circleci.com/gh/marcqualie/rancher-shell)
 [![Code Climate](https://codeclimate.com/github/marcqualie/rancher-shell/badges/gpa.svg)](https://codeclimate.com/github/marcqualie/rancher-shell)
 [![Test Coverage](https://codeclimate.com/github/marcqualie/rancher-shell/badges/coverage.svg)](https://codeclimate.com/github/marcqualie/rancher-shell/coverage)
 [![Issue Count](https://codeclimate.com/github/marcqualie/rancher-shell/badges/issue_count.svg)](https://codeclimate.com/github/marcqualie/rancher-shell)

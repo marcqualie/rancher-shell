@@ -29,10 +29,6 @@ module Rancher
         @pipe_broken = false
         frame = ::WebSocket::Frame::Incoming::Client.new
         @closed = false
-        once :__close do |err|
-          close
-          emit :close, err
-        end
 
         @thread = Thread.new do
           while !@closed do
@@ -45,6 +41,7 @@ module Rancher
                 @handshake << recv_data
                 if @handshake.finished?
                   @handshaked = true
+                  logger.debug("handshake complete")
                   emit :open
                 end
               else
@@ -54,47 +51,54 @@ module Rancher
                 end
               end
             rescue => e
-              puts "EMIT ERROR: #{e.to_yaml}"
+              puts "broken pipe error thing"
+              logger.error("EMIT ERROR: #{e.to_yaml}")
               emit :error, e
             end
           end
-          puts "THREAD IS DEAD"
+          logger.error("THREAD IS DEAD")
         end
 
         @socket.write @handshake.to_s
       end
 
-      def send(data, opt={:type => :text})
+      def send(data_encoded, opt={:type => :text})
+        data_decoded = Base64.decode64(data_encoded)
         if !@handshaked or @closed
-          puts "closed socket.."
+          logger.warn("cannot send data because socket is closed")
           return
         end
         type = opt[:type]
-        frame = ::WebSocket::Frame::Outgoing::Client.new(:data => data, :type => type, :version => @handshake.version)
+        data_codes = data_decoded.split('').map { |char| char.ord.to_s }
+        logger.debug("input: (#{data_encoded.length} bytes)")
+        logger.debug("  #{data_encoded}")
+        logger.debug("  #{data_codes.join(' ')}")
+        logger.debug("  #{data_decoded}")
+        frame = ::WebSocket::Frame::Outgoing::Client.new(:data => data_encoded, :type => type, :version => @handshake.version)
         begin
-          @socket.write frame.to_s
+          @socket.write(frame.to_s)
         rescue Errno::EPIPE => e
+          puts "nroken pp"
           @pipe_broken = true
-          emit :__close, e
+          emit :close, e
         end
       end
 
       def close
         return if @closed
+        logger.debug("client closed connection")
         if !@pipe_broken
           send nil, :type => :close
         end
         @closed = true
         @socket.close if @socket
         @socket = nil
-        emit :__close
-        Thread.kill @thread if @thread
+        Thread.kill(@thread) if @thread
       end
 
       def open?
         @handshake.finished? and !@closed
       end
-
     end
   end
 end

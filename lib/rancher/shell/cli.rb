@@ -6,6 +6,8 @@ require 'thor'
 module Rancher
   module Shell
     class CLI < Thor
+      include LoggerHelper
+
       map %w[-v --version] => :version
       desc 'version', 'display gem version'
       def version
@@ -63,6 +65,32 @@ module Rancher
           print container['imageUuid'][7..-1].ljust 48
           print container['ports'] if container['ports'] && container['ports'] != ''
           print "\n"
+        end
+      end
+
+      desc "logs", "Display logs"
+      option :tail, aliases: '-t'
+      option :lines, aliases: '-n'
+      def logs
+        filename = logger.instance_variable_get(:'@logdev').filename
+        tail_command = "tail#{options[:tail] ? " -f -n#{options[:lines] || 0}" : " -n#{options[:lines] || 10}"} #{filename}"
+        puts "==> displaying logs from #{filename} <=="
+        puts "    #{tail_command}"
+        begin
+          if options[:tail]
+            f = IO.popen(tail_command.split(' '))
+            loop do
+              Kernel.select([f])
+              while line = f.gets do
+                puts line
+              end
+            end
+          else
+            puts `#{tail_command}`
+          end
+        rescue Exception => e
+          puts "    #{e.message}"
+          puts "==> end of log output <=="
         end
       end
     end

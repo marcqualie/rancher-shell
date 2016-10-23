@@ -23,10 +23,10 @@ module Rancher
 
         def listen!
           begin
-            logger.info "listening"
+            logger.info "listening for keyboaard input"
             system("stty raw")
             while input = STDIN.getc
-              @websocket.send Base64.encode64 input
+              @websocket.send(Base64.encode64 input)
             end
           ensure
             system("stty -raw echo")
@@ -62,37 +62,41 @@ module Rancher
           # default_bash_command = "TERM=xterm-256color; export TERM; [ -x /bin/bash ] && ([ -x /usr/bin/script ] && /usr/bin/script -q -c \"/bin/bash\" /dev/null || exec /bin/bash) || exec /bin/sh"
           # @config['options']['command'] = default_bash_command if @config['options']['command'] === 'bash'
           logger.debug "running command: #{@config['options']['command']}"
+          bash_command = "TERM=xterm-256color; export TERM; [ -x /bin/bash ] && ([ -x /usr/bin/script ] && /usr/bin/script -q -c /bin/bash /dev/null || exec /bin/bash) || exec /bin/sh"
+          logger.debug "  #{bash_command}"
           @response = @api.post(
             "containers/#{@container['id']}?action=execute",
             "command" => [
               "/bin/sh",
               "-c",
-              @config['options']['command'],
+              bash_command,
             ],
             "attachStdin" => true,
             "attachStdout" => true,
             "tty" => true,
           )
           websocket_url = "#{@response.json['url']}?token=#{@response.json['token']}"
-          logger.info "connecting to #{@response.json['url']} ..."
+          logger.info "connecting to #{@response.json['url']}"
           @websocket = Rancher::Shell::WebsocketClient.new websocket_url, headers: { 'Authorization' => "Bearer #{@response.json['token']}"}
           @websocket.on :open do |event|
-            logger.info "  connected!"
+            logger.info "connected to websocket"
           end
-          @websocket.on :chunk do |encoded_chunk|
-            chunk = Base64.decode64 encoded_chunk
-            emit :message, chunk
-          end
-          @websocket.on :message do |data|
-            $stdout.print data
+          @websocket.on :chunk do |chunk_encoded|
+            chunk_decoded = Base64.decode64(chunk_encoded)
+            chunk_codes = chunk_decoded.split('').map { |char| char.ord.to_s }
+            logger.debug("output: (#{chunk_decoded.length} bytes)")
+            logger.debug("  #{chunk_encoded}")
+            logger.debug("  #{chunk_codes.join(' ')}")
+            logger.debug("  #{chunk_decoded}")
+            $stdout.print(chunk_decoded)
           end
           @websocket.on :error do |event|
-            logger.error "socket error: #{event}"
-            Kernel.exit true
+            logger.error("socket error: #{event}")
+            Kernel.exit(true)
           end
           @websocket.on :close do
-            logger.error "closed connection"
-            Kernel.exit true
+            logger.info("server closed connection")
+            Kernel.exit(true)
           end
         end
       end

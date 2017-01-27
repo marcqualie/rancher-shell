@@ -67,9 +67,8 @@ module Rancher
           logger.info "container = #{@container['id']}"
           # default_bash_command = "TERM=xterm-256color; export TERM; [ -x /bin/bash ] && ([ -x /usr/bin/script ] && /usr/bin/script -q -c \"/bin/bash\" /dev/null || exec /bin/bash) || exec /bin/sh"
           # @config['options']['command'] = default_bash_command if @config['options']['command'] === 'bash'
-          logger.debug "running command: #{@config['options']['command']}"
-          bash_command = "TERM=xterm-256color; export TERM; [ -x /bin/bash ] && ([ -x /usr/bin/script ] && /usr/bin/script -q -c /bin/bash /dev/null || exec /bin/bash) || exec /bin/sh"
-          logger.debug "  #{bash_command}"
+          bash_command = @config['options']['command']
+          logger.debug "running command: #{bash_command}"
           @response = @api.post(
             "containers/#{@container['id']}?action=execute",
             "command" => [

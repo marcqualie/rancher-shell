@@ -44,7 +44,7 @@ module Rancher
 
         def retrieve_containers!
           @response = @api.get(
-            "containers",
+            "containers?limit=1000",
           )
           @containers = @response.json['data'].map do |container|
             {

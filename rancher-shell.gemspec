@@ -23,9 +23,9 @@ Gem::Specification.new do |spec|
   spec.add_dependency "thor", "~> 0.19.1"
   spec.add_dependency "activesupport", "~> 5.0.0"
 
-  spec.add_development_dependency "bundler", "~> 1.13.5"
+  spec.add_development_dependency "bundler", "~> 1.14.3"
   spec.add_development_dependency "codeclimate-test-reporter", "~> 0.6.0"
   spec.add_development_dependency "rake", "~> 11.3.0"
   spec.add_development_dependency "rspec", "~> 3.5.0"
-  spec.add_development_dependency "simplecov", "~> 0.12.0"
+  spec.add_development_dependency "simplecov", "~> 0.13.0"
 end

@@ -34,6 +34,7 @@ module Rancher
         end
 
         def setup_api!
+          logger.info "authorizing with #{@config['project']['api']['host']}"
           @api = Rancher::Shell::Api.new(
             host: @config['project']['api']['host'],
             user: @config['project']['api']['key'],
@@ -51,7 +52,12 @@ module Rancher
               'name' => container['name'],
               'state' => container['state'],
               'ports' => container['ports'],
+              'stack' => container['labels'] && container['labels']['io.rancher.stack.name'],
             }
+          end
+          logger.debug "  containers #{@containers.count}"
+          @containers.sort_by { |container| "#{container['stack']}/#{container['name']}" }.each do |container|
+            logger.debug "  #{container['stack']} / #{container['name']}     #{container['state']}"
           end
           @container = @containers.find { |container| container['name'] === @config['options']['container'] }
           exit_with_error "could not find container: #{@config['options']['container']}" unless @container

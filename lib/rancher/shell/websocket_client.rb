@@ -34,7 +34,7 @@ module Rancher
           while !@closed do
             begin
               unless recv_data = @socket.getc
-                sleep 1
+                sleep 0.25
                 next
               end
               unless @handshaked

@@ -39,6 +39,7 @@ module Rancher
             host: @config['project']['api']['host'],
             user: @config['project']['api']['key'],
             pass: @config['project']['api']['secret'],
+            environment: @config['project']['api']['environment'],
           )
         end
 

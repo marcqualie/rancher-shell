@@ -9,10 +9,12 @@ module Rancher
         user: nil,
         pass: nil,
         host: 'rancher.example.com',
+        environment: nil,
       }
 
       def initialize options = {}
         @options = DEFAULT_OPTIONS.merge options
+        raise "Environment is required for Rancher version 1.3+" unless @options[:environment].is_a?(String)
       end
 
       def get resource, data = nil, headers = {}
@@ -24,7 +26,7 @@ module Rancher
       end
 
       def request method_name, resource, data, headers
-        uri = URI "https://#{@options[:host]}/v1/#{resource}"
+        uri = URI "https://#{@options[:host]}/v1/projects/#{@options[:environment]}/#{resource}"
         Net::HTTP.start uri.host, uri.port, use_ssl: true do |http|
           method_class_name = "Net::HTTP::#{method_name.to_s.split('_').map(&:capitalize).join}"
           method_class = Object.const_get method_class_name

@@ -23,6 +23,7 @@ module Rancher
           'project' => options[:project],
           'container' => options[:container],
           'stack' => options[:stack],
+          'environment' => options[:environment],
           'command' => command,
         )
         instance = Rancher::Shell::Commands::Exec.new

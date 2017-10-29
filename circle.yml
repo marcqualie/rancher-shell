@@ -1,6 +1,6 @@
 machine:
   ruby:
-    version: 2.3.1
+    version: 2.4.2
 
 dependencies:
   cache_directories:
@@ -12,3 +12,4 @@ dependencies:
 test:
   override:
     - bundle exec rspec --format documentation
+    - bundle exec codeclimate-test-reporter

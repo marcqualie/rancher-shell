@@ -1,9 +1,6 @@
 require "codeclimate-test-reporter"
 
-SimpleCov.formatter = SimpleCov::Formatter::MultiFormatter.new([
-  CodeClimate::TestReporter::Formatter,
-  SimpleCov::Formatter::HTMLFormatter,
-])
 SimpleCov.start do
   add_filter "spec"
+  add_group "Commands", "lib/rancher/shell/commands"
 end

@@ -18,14 +18,14 @@ Gem::Specification.new do |spec|
   spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
-  spec.add_dependency "websocket", "~> 1.2.3"
-  spec.add_dependency "event_emitter", "~> 0.2.5"
-  spec.add_dependency "thor", "~> 0.19.1"
-  spec.add_dependency "activesupport", "~> 5.0.0"
+  spec.add_dependency "websocket", "~> 1.2.4"
+  spec.add_dependency "event_emitter", "~> 0.2.6"
+  spec.add_dependency "thor", "~> 0.20.0"
+  spec.add_dependency "activesupport", "~> 5.1.4"
 
-  spec.add_development_dependency "bundler", "~> 1.14.3"
-  spec.add_development_dependency "codeclimate-test-reporter", "~> 0.6.0"
-  spec.add_development_dependency "rake", "~> 11.3.0"
-  spec.add_development_dependency "rspec", "~> 3.5.0"
-  spec.add_development_dependency "simplecov", "~> 0.13.0"
+  spec.add_development_dependency "bundler", "~> 1.15.4"
+  spec.add_development_dependency "codeclimate-test-reporter", "~> 1.0.8"
+  spec.add_development_dependency "rake", "~> 12.2.1"
+  spec.add_development_dependency "rspec", "~> 3.7.0"
+  spec.add_development_dependency "simplecov", "~> 0.13"
 end

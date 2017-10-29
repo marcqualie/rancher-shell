@@ -3,3 +3,4 @@
 *.gem
 .rancher-shell.yml
 coverage
+.ruby-version
